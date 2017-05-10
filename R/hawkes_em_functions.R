@@ -199,7 +199,7 @@ gof <- function(pp_obj, parms, kernel_type = "dgamma") {
   for (i in 1:m) {
     points(resid[[i]], quant[[i]], type = "p", pch = 1, col = (i+2))
   }
-  ks
+  #ks
 }
 
 
@@ -300,7 +300,11 @@ set_parms <- function(pp_obj, kernel_type = "dgamma", constraints = NULL) {
 #' @export
 
 get_parms <- function(em_obj, solution = 1) {
-	temp <- em_obj$Solutions[solution,-1]
+  temp <- em_obj$Solutions
+  if (is.null(dim(temp))) {
+    temp <- t(as.matrix(temp))
+  }
+	temp <- temp[solution,-1]
   m <- length(temp[grep("mu", names(temp))])
   mu <- temp[1:m]
   grep("^k_parm1", names(temp))

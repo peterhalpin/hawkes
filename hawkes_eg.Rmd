@@ -1,5 +1,5 @@
 ---
-title: "Illustrative example of using `hawkes` package."
+title: "Illustrative example for `hawkes` package."
 author: "Peter F Halpin"
 date: "5/10/2017"
 output: html_document
@@ -9,25 +9,41 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-This is a minimal example of using the code in `hawkes` package. The package is very preliminary stages of development. The main functions are illustrated here. The \hawkes\man for a full list  
+This is a minimal example of using the code in the `hawkes` package. The package is in very preliminary stages of development. The main functions are illustrated here. See the documentation for a full list functions and issues.
 
 First install and load the package. 
 
-```{r cars}
+```{r, echo = T, message = F}
 devtools::install_github("peterhalpin/hawkes")
 library("hawkes")
 ```
-It comes with an example dataset, `email` of email exchanges between an employer and employee (Halpin & DeBoeck, 2013). 
+It comes with an example dataset, `email`, which is a list of two vectors containing the sendings times of email exchanges between an employer and employee. Time is recorded in hours and the employees start data is `t = 0`. See Halpin & DeBoeck (2013) for more details. The function `pp` takes a list of event times and turns it into an S3 object with some basic functionality
 
+```{r}
+pp_obj <- pp(email)
+print(pp_obj)
+plot(pp_obj)
 ```
 
-```
-## Including Plots
+The `gof` function can be used to visually inspect the data for temporal clustering (i.e., overdispersion relative to the homogeneous Poisson process). See `help(gof)` for more details. 
 
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
+```{r, message = F}
+gof(pp_obj)
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+The clustering might be explained using Hawkes process. To esimtate the model use the `EM` function and see `help(EM)` for a description. 
+
+```{r, message = F}
+hawkes_em <- EM(pp_obj, nstarts = 1, maxit = 20)
+hawkes_em$Solutions
+```
+
+Use the gof function with the parms from the hawkes model to assess whether the model accounts for the clustering in the data. 
+
+```{r, message = F}
+parms <- get_parms(hawkes_em)
+gof(pp_obj, parms)
+```
+
+Check back soon for data simulation, computation standard errors, and other functionality currently under development. 
+

@@ -1,6 +1,6 @@
 Package: hawkes
 Type: Package
-Title: EM estimation of Multivariate Hawkes process
+Title: EM estimation of multivariate Hawkes process
 Version: 0.1.0
 Author: Peter F Halpin
 Maintainer: <peter.halpin@nyu.edu>

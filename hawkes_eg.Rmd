@@ -1,0 +1,30 @@
+---
+title: "Illustrative example of using `hawkes` package."
+author: "Peter F Halpin"
+date: "5/10/2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+This is a minimal example of using the code in `hawkes` package. The package is very preliminary stages of development. The main functions are illustrated here. 
+
+First load the package
+
+```{r cars}
+devtools::install_github("peterhalpin/hawkes")
+library("hawkes")
+
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.

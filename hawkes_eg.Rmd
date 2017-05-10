@@ -17,7 +17,7 @@ First install and load the package.
 devtools::install_github("peterhalpin/hawkes")
 library("hawkes")
 ```
-It comes with an example dataset, `email`, which is a list of two vectors containing the sendings times of email exchanges between an employer and employee. Time is recorded in hours and the employees start data is `t = 0`. See Halpin & DeBoeck (2013) for more details. The function `pp` takes a list of event times and turns it into an S3 object with some basic functionality
+It comes with an example dataset, `email`, which is a list of two vectors containing the sendings times of email exchanges between an employer and employee. Time is recorded in hours and the employee's start date is `t = 0`. See Halpin & DeBoeck (2013) for more details. The function `pp` takes a list of event times and turns it into an S3 object with some basic functionality.
 
 ```{r}
 pp_obj <- pp(email)
@@ -31,7 +31,7 @@ The `gof` function can be used to visually inspect the data for temporal cluster
 gof(pp_obj)
 ```
 
-The clustering might be explained using Hawkes process. To esimtate the model use the `EM` function and see `help(EM)` for a description (This will take a while to run and the `optim` trace output will print to the console. Using just a few iterations for this e.g.)
+The clustering might be accounted for using the Hawkes process. To esimtate the model use the `EM` function and see `help(EM)` for a description. (This will take a while to run and the `optim` trace output will print to the console. Using just a few iterations for this e.g.)
 
 ```{r em, warnings = F, results = 'hide', message = F}
 hawkes_em <- EM(pp_obj, nstarts = 1, maxit = 3)

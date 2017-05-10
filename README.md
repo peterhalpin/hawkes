@@ -1,18 +1,18 @@
 ## hawkes
 
-An R package for estimating multivariate Hawkes processes.
+An R package for estimating multivariate Hawkes processes. For an example of usage, see http://htmlpreview.github.io/?https://github.com/peterhalpin/hawkes/blob/master/hawkes_eg.html
 
-The package is under development. It currently has limited functionality, incomplete documentation, and does not check for many types of arg formatting errors. So, user beware. Please follow the MIT license for using this code and cite the following article for any usage.
+The package is under development. It currently has limited functionality, incomplete documentation, and does not check for many types of arg formatting errors. So, user beware. Please follow the MIT license for using this code and cite the following article if you use it.
 
 Halpin, P. F., & De Boeck, P. (2013). Modelling Dyadic Interaction with Hawkes Processes. Psychometrika, 78(4), 793–814. http://doi.org/10.1007/s11336-013-9329-1
 
 
 ## To Do list
-1. Standard errors
-2. Data simulation
-3. Response kernels other than `dgamma`
+1. standard errors
+2. data simulation
+3. eesponse kernels other than `dgamma`
 4. linear parameter constraints
-5. Clean up
+5. clean up
 
 ## Related literature
 

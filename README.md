@@ -10,7 +10,7 @@ Halpin, P. F., & De Boeck, P. (2013). Modelling Dyadic Interaction with Hawkes P
 ## To Do list
 1. standard errors
 2. data simulation
-3. eesponse kernels other than `dgamma`
+3. response kernels other than `dgamma`
 4. linear parameter constraints
 5. clean up
 

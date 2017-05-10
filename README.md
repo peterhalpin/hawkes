@@ -2,7 +2,7 @@
 
 An R package for estimating multivariate Hawkes processes. For an example of usage, see http://htmlpreview.github.io/?https://github.com/peterhalpin/hawkes/blob/master/hawkes_eg.html
 
-The package is under development. It currently has limited functionality, incomplete documentation, and does not check for many types of arg formatting errors. So, user beware. Please follow the MIT license for using this code and cite the following article if you use it.
+The package is under development. It currently has limited functionality, incomplete documentation, and does not check for many types of arg formatting errors. So, user beware. Please follow the GNU license for using this code and cite the following article if you use it.
 
 Halpin, P. F., & De Boeck, P. (2013). Modelling Dyadic Interaction with Hawkes Processes. Psychometrika, 78(4), 793–814. http://doi.org/10.1007/s11336-013-9329-1
 

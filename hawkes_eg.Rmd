@@ -9,16 +9,19 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-This is a minimal example of using the code in `hawkes` package. The package is very preliminary stages of development. The main functions are illustrated here. 
+This is a minimal example of using the code in `hawkes` package. The package is very preliminary stages of development. The main functions are illustrated here. The \hawkes\man for a full list  
 
-First load the package
+First install and load the package. 
 
 ```{r cars}
 devtools::install_github("peterhalpin/hawkes")
 library("hawkes")
+```
+It comes with an example dataset, `email` of email exchanges between an employer and employee (Halpin & DeBoeck, 2013). 
 
 ```
 
+```
 ## Including Plots
 
 You can also embed plots, for example:

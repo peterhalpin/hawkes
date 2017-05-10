@@ -27,23 +27,27 @@ plot(pp_obj)
 
 The `gof` function can be used to visually inspect the data for temporal clustering (i.e., overdispersion relative to the homogeneous Poisson process). See `help(gof)` for more details. 
 
-```{r, message = F}
+```{r gof1, message = F, warnings = F}
 gof(pp_obj)
 ```
 
-The clustering might be explained using Hawkes process. To esimtate the model use the `EM` function and see `help(EM)` for a description. 
+The clustering might be explained using Hawkes process. To esimtate the model use the `EM` function and see `help(EM)` for a description (This will take a while to run and the `optim` trace output will print to the console. Using just a few iterations for this e.g.)
 
-```{r, message = F}
-hawkes_em <- EM(pp_obj, nstarts = 1, maxit = 20)
-hawkes_em$Solutions
+```{r em, warnings = F, results = 'hide', message = F}
+hawkes_em <- EM(pp_obj, nstarts = 1, maxit = 3)
 ```
 
-Use the gof function with the parms from the hawkes model to assess whether the model accounts for the clustering in the data. 
+Check out EM output: 
+```{r em2}
+hawkes_em
+```
 
-```{r, message = F}
+Use the `get_parms` function to extract and format Solutions from `EM` and then call the `gof` function with the parms to assess whether the model accounted for the clustering in the data. 
+
+```{r gof2, message = F}
 parms <- get_parms(hawkes_em)
 gof(pp_obj, parms)
 ```
 
-Check back soon for data simulation, computation standard errors, and other functionality currently under development. 
+Check back soon for data simulation, computation of standard errors, choice of response kernels, and other functionality currently under development. 
 

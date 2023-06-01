@@ -199,7 +199,7 @@ gof <- function(pp_obj, parms, kernel_type = "dgamma") {
   for (i in 1:m) {
     points(resid[[i]], quant[[i]], type = "p", pch = 1, col = (i+2))
   }
-  #ks
+  ks
 }
 
 
@@ -799,8 +799,8 @@ EM <- function(pp_obj, kernel_type, starts, nstarts, conv, maxit, Trace) {
 	ind <- order(Solutions[,1], decreasing = T)
 	colnames(Solutions) <- c("logL", names(unlist(parms)))
 	colnames(History) <- paste0("iter", 0:maxit)
-	temp <- list(Solutions[ind,], History[ind, ])
-	names(temp) <- c("Solutions", "History")
+	temp <- list(Solutions[ind,], History[ind, ], list_P)
+	names(temp) <- c("Solutions", "History", "Probs")
 	temp
 }
 

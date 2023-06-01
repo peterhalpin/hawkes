@@ -1,0 +1,120 @@
+---
+title: "`rhawkes` Development Plan"
+author: "Peter F Halpin"
+date: "Last modified: 02.28.2020"
+output: 
+  html_document:
+    toc: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+The current version of `hawkes` has a number of limitations that are outlined below along with questions comments about how then can be addresed. After that a stepwise plan laid out for version 0.2.0
+
+# Current limitations
+
+## It's slow 
+
+On each iteration of the EM algorithm, a 5-deep nesting of for-loops appears. 
+Doing this 5-layer deep nested for loop quickly is important.
+
+The outer loop is over $N$, the number of realizations of process that are to be analysed (e.g., persons). The next two loops are over the dimension the process, $M$. Similar to a covariance matrix, computations are required for each pairwise combination of processes. The inner two loops are over the observed number of time points $T$. For each time point $t_i$,  it is required to loop over all $t_j < t_i$. This puts the order of computations at $O(NM^2T^2)$ -- it grows linearly with the sample size, $N$, quadratically with the of dimensionality of the process,$M$, and quadratically with duration of the time series $T$. 
+
+$N$ and $M$ aren't going away, but one $N$ is linear and the $M$ will by relatively small in applications I have in mind. This leaves $T$. The double-loop over $T$ is currently implemented  by `compute_I` (compute the response intensity), which is the workhorse of the Q step and the E-step -- I would say about 80% of the rest of the EM is just bookeeping for `compute_I`. 
+
+Let's take a look: 
+
+```{r, message = F, warning = F}
+# devtools::install_github("peterhalpin/hawkes")
+library("hawkes")
+compute_I
+```
+
+* `out` and `inp` are integers indicating the input / output margins, 
+* `pp_obj` is an S3 object that contains the data (time points) as well as some summmary info about the data that is used by most functions (number of margins, time points per margin, observation period). 
+* `parms` are the parameters of the $k$
+* `k` is the response kernel
+
+Now that I know more about how R searches for variables and enviromental scoping, I would consider just passing `out`, `inp`, and `Log` to `compute_I` and having other args sit in the next enviornment up (the EM function). Or at least passing the parameterized response kernel rather than the kernel function and its parms separately. Sorting out how to allow for user-chosen kernel with possibly different numbers of parameters was a problem (ask Zack about scoping and efficiency.)
+
+To avoid the double loop it calls `lapply` and `mapply` to find the possible parents for each output event (`parent_ind` -- this is rounding error trick), to compute the lag bewteen each parent and each output (`parent_lag`), and to compute the response kernel for each the lags (`temp_I`). It seems this should be fast? But it isn't...
+
+
+## Random-effects
+
+The current verions of `hawkes` goes one process at a time. That has a number of problems that result can be addressed via a random effects approach, which can be run on multiple processes at a time.
+
+To include a random effect for the intensity parameter `\alpha` (the multiplier on the response kernel), there are at least two approaches. 
+
+* Select $G(\alpha)$ so that the marginal complete-data likelihood $L_c(X) = \int L_c(X\mid\alpha)dG(\alpha)$ is analytically tractable. 
+
+* Quadrature-based approximate of the integral. 
+
+So far I have worked out the EM for first approach, using the two-parameter gamma density for $G(\alpha)$. This is OK for the univariate case,  but for M-dimensional case $A = \{\alpha_{jk}\}$ is an $M \times M$ non-symmetrical matrix. There are different considerations here... 
+
+The main case I am interested in is where $N$ groups of responsdents are observed, each with $M_n = M$ (for simplicity) members. In this case, we might better think of the situation as an $M \times N$ dimensional process with two types of dependence, each with its own random effect. The following matrix depicts this situation for $M = 2$ (dyads).
+
+
+\[A_{MN \times MN} = \left[\begin{matrix}  
+                       \alpha_{11} & \beta_{21} & 0 & 0 & 0 & 0 & \dots \\ 
+                       \beta_{21} & \alpha_{22} & 0 & 0 & 0 & 0 & \dots \\ 
+                       0 & 0 & \alpha_{33} & \beta_{34} & 0 & 0 & \dots \\ 
+                       0 & 0 & \beta_{43}  & \alpha_{44} & 0 & 0 & \dots \\ 
+                       0 & 0 & 0 & 0 & \alpha_{55} & \beta_{56}  & \dots \\ 
+                       0 & 0 & 0 & 0 & \beta_{65}  & \alpha_{66} & \dots \\
+                       \vdots & \vdots & \vdots & \vdots & \vdots & \vdots & \ddots \\ 
+                     \end{matrix} \right] 
+   \quad \text{with} \quad 
+   \begin{matrix} \alpha_{ii} \sim G_\alpha \\  
+                  \beta_{ij} \sim G_\beta \\
+                  \alpha_{ii} \perp \beta_{ij}
+   \end{matrix}
+\]
+
+* Auto-dependence: how each person's actions depend on their own past. This is just what we had above in the univariate case, so we can use the same approach for the random effects $\alpha_{ii} \sim G_\alpha$
+
+* Cross-dependence: how each person's actions depend on some one else's past actions. The actions of people on different teams are independent by assumption. But the cross dependence explains how the team members depend on each other. Since team members' labels are exchangeable, it seems that we can (must?) treat the non-zero off diagonal components as echangeable random effects (i.e., iid samples from the same distribution): $\beta_{ij} \sim G_\beta$. 
+
+There are some issues not addressed here, but I am willing to treat this as a first approximation. For example, should the components of the vector $\gamma_i = [\alpha_{ii}, \beta_{ij}]$ be treated as related to one other? In this case, we would be taking $i$ samples from an $M$-dimensional distribution. We could treat the $M$ parameters as independent in a heirarhical model...but, this is making me quezy. Anyway, if we want to do all this we should just go full Bayes.
+
+The second case occurs where there are $M$ input streams each of $N$ individuals, and the input streams are the same across individuals (e.g., text, click, voice). We might actually treat this as a univariate stream of event times with different covariates describing the input source. The marks could affect the probability of another event occuring as well as the mark of the next event. Not sure how to get the cross-dependence tho.... Perhaps we  need a properly multivariate distribution and cannot get away with simplifying sturctures. Or perhaps we just care about the sequence...
+
+## Follow-up analyses
+
+Let's say we fit a viable random effects Hawkes process to some data in which $N$ individuals are nested within $M$ groups and we have predicted values for each element of the matrix given above, and, let's even say, prediction errors for each element. What is required next are a number of summary quantities computed on the team's responsiveness matrices. It seems that we can accomplish a lot of this via post processing with node- and graph-level statistics for bi-directional weighted networks. But I don't know much about this...
+
+Let's say that we want to test structural constraints on the responsiveness matrices. For example, symmetry constraints would allow us to test for mirroring, row constraints would all us to test whether someone is equally responsive to all team members (only useful when M > 2).
+
+Let's say we want explain differences in groups performance in terms of group or node level covariates. Hmmm
+
+# Plans 
+
+* Data: need to sort out how to format N X M X T data structure. S3 object is OK or do I need to learn about S4?
+
+* Model How is a model specified? 
+ * Choice of response kernel
+ * Parmeter restictions among response intensity matrices (to test nested models)? But this would presumably happen per-team?
+ * Covariates to regress intensity on -- this should use standard model syntax but would require a second data set...
+ 
+* Estimation: The core function should estimate hawkes are return an object with methods for `coef`, `summary`, `resid`, etc. Args passed to `hawkes` are 
+
+* How to handle choice of response function? Should package reponse kernel with its parms for passing to other functions. 
+
+
+
+EM
+ |-- logL
+ |-- compute_mu
+ |-- compute_alpha
+ |-- probs
+ |-- Q_fun 
+     |-- compute_Q
+         |-- compute_alpha
+         |-- compute_I
+         |-- compensator
+ |-- set_parms
+
+
